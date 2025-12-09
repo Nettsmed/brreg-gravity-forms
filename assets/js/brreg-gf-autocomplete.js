@@ -78,9 +78,17 @@
     }
 
     // Make org field readonly by default (always, regardless of uneditable setting)
-    // Other fields will be made uneditable only after population if the setting is enabled
     if (orgInput) {
       orgInput.setAttribute('readonly', true);
+    }
+
+    // If "Make fields uneditable" is enabled, make all output fields uneditable immediately
+    // This ensures they appear uneditable from the start, before any selection
+    if (makeFieldsUneditable) {
+      if (orgInput) setFieldUneditable(orgInput);
+      if (streetInput) setFieldUneditable(streetInput);
+      if (zipInput) setFieldUneditable(zipInput);
+      if (cityInput) setFieldUneditable(cityInput);
     }
 
     // Build dropdown
@@ -184,40 +192,31 @@
               companyInput.value = company.navn;
               companyInput.dispatchEvent(new Event('change'));
 
-              // Org number
-              if (orgInput) {
-                orgInput.value = company.organisasjonsnummer;
-                orgInput.dispatchEvent(new Event('change'));
-                // Apply uneditable state after setting value if needed
-                if (makeFieldsUneditable) {
-                  setFieldUneditable(orgInput);
+              // Helper function to set value on potentially disabled field
+              function setValueOnField(input, value) {
+                if (!input) return;
+                // Temporarily remove disabled to set value, then re-apply if needed
+                const wasDisabled = input.hasAttribute('disabled');
+                if (wasDisabled) {
+                  input.removeAttribute('disabled');
+                }
+                input.value = value;
+                input.dispatchEvent(new Event('change'));
+                // Re-apply disabled if it was disabled and setting is enabled
+                if (wasDisabled && makeFieldsUneditable) {
+                  input.setAttribute('disabled', true);
                 }
               }
+
+              // Org number
+              setValueOnField(orgInput, company.organisasjonsnummer);
 
               // Address fields
               const addr = getBestAddress(company);
               if (addr) {
-                if (streetInput) {
-                  streetInput.value = addr.street;
-                  streetInput.dispatchEvent(new Event('change'));
-                  if (makeFieldsUneditable) {
-                    setFieldUneditable(streetInput);
-                  }
-                }
-                if (zipInput) {
-                  zipInput.value = addr.zip;
-                  zipInput.dispatchEvent(new Event('change'));
-                  if (makeFieldsUneditable) {
-                    setFieldUneditable(zipInput);
-                  }
-                }
-                if (cityInput) {
-                  cityInput.value = addr.city;
-                  cityInput.dispatchEvent(new Event('change'));
-                  if (makeFieldsUneditable) {
-                    setFieldUneditable(cityInput);
-                  }
-                }
+                setValueOnField(streetInput, addr.street);
+                setValueOnField(zipInput, addr.zip);
+                setValueOnField(cityInput, addr.city);
               }
 
               dropdown.innerHTML = '';
