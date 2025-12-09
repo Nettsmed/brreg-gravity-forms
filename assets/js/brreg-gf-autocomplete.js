@@ -69,12 +69,15 @@
     const makeFieldsUneditable = profile.make_fields_uneditable === true || profile.make_fields_uneditable === '1' || profile.make_fields_uneditable === 1;
 
     // Function to set field as uneditable
+    // Note: Using readonly instead of disabled so values are submitted with the form
     function setFieldUneditable(input) {
       if (!input) return;
       input.setAttribute('readonly', true);
-      input.setAttribute('disabled', true);
+      // Don't use disabled - it prevents form submission
+      // readonly still allows the value to be submitted
       input.style.backgroundColor = '#f0f0f0';
       input.style.cursor = 'not-allowed';
+      input.style.opacity = '0.7';
     }
 
     // Make org field readonly by default (always, regardless of uneditable setting)
@@ -192,20 +195,12 @@
               companyInput.value = company.navn;
               companyInput.dispatchEvent(new Event('change'));
 
-              // Helper function to set value on potentially disabled field
+              // Helper function to set value on field
+              // Fields use readonly (not disabled) so values are submitted
               function setValueOnField(input, value) {
                 if (!input) return;
-                // Temporarily remove disabled to set value, then re-apply if needed
-                const wasDisabled = input.hasAttribute('disabled');
-                if (wasDisabled) {
-                  input.removeAttribute('disabled');
-                }
                 input.value = value;
                 input.dispatchEvent(new Event('change'));
-                // Re-apply disabled if it was disabled and setting is enabled
-                if (wasDisabled && makeFieldsUneditable) {
-                  input.setAttribute('disabled', true);
-                }
               }
 
               // Org number
