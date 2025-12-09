@@ -1,0 +1,22 @@
+# WordPress
+.DS_Store
+Thumbs.db
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+
+# Logs
+*.log
+
+# Node modules (if you add build tools later)
+node_modules/
+package-lock.json
+
+# Build files (if you add build tools later)
+dist/
+build/
+
