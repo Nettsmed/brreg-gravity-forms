@@ -67,6 +67,7 @@
 
     // Check if fields should be made uneditable
     const makeFieldsUneditable = profile.make_fields_uneditable === true || profile.make_fields_uneditable === '1' || profile.make_fields_uneditable === 1;
+    const makeUneditableAfterPopulation = profile.make_uneditable_after_population === true || profile.make_uneditable_after_population === '1' || profile.make_uneditable_after_population === 1;
 
     // Function to set field as uneditable
     // Note: Using readonly instead of disabled so values are submitted with the form
@@ -80,14 +81,11 @@
       input.style.opacity = '0.7';
     }
 
-    // Make org field readonly by default (always, regardless of uneditable setting)
-    if (orgInput) {
-      orgInput.setAttribute('readonly', true);
-    }
-
-    // If "Make fields uneditable" is enabled, make all output fields uneditable immediately
-    // This ensures they appear uneditable from the start, before any selection
-    if (makeFieldsUneditable) {
+    // If "Make fields uneditable" is enabled, check when to make them uneditable
+    // If "make_uneditable_after_population" is NOT ticked, make fields uneditable at load
+    // If "make_uneditable_after_population" IS ticked, fields will be made uneditable after population
+    if (makeFieldsUneditable && !makeUneditableAfterPopulation) {
+      // Make all output fields uneditable immediately at load
       if (orgInput) setFieldUneditable(orgInput);
       if (streetInput) setFieldUneditable(streetInput);
       if (zipInput) setFieldUneditable(zipInput);
@@ -212,6 +210,15 @@
                 setValueOnField(streetInput, addr.street);
                 setValueOnField(zipInput, addr.zip);
                 setValueOnField(cityInput, addr.city);
+              }
+
+              // If "Make fields uneditable" is enabled AND "make_uneditable_after_population" is ticked,
+              // make fields uneditable after population
+              if (makeFieldsUneditable && makeUneditableAfterPopulation) {
+                if (orgInput) setFieldUneditable(orgInput);
+                if (streetInput) setFieldUneditable(streetInput);
+                if (zipInput) setFieldUneditable(zipInput);
+                if (cityInput) setFieldUneditable(cityInput);
               }
 
               dropdown.innerHTML = '';

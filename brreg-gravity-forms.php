@@ -44,6 +44,7 @@ class Brreg_GravityForms_Autocomplete {
                         'city'   => isset( $saved['outputs']['city'] ) ? $saved['outputs']['city'] : $defaults['outputs']['city'],
                     ),
                     'make_fields_uneditable' => isset( $saved['make_fields_uneditable'] ) ? (bool) $saved['make_fields_uneditable'] : $defaults['make_fields_uneditable'],
+                    'make_uneditable_after_population' => isset( $saved['make_uneditable_after_population'] ) ? (bool) $saved['make_uneditable_after_population'] : $defaults['make_uneditable_after_population'],
                     'conditions'            => array(),
                 ),
             ),
@@ -69,6 +70,7 @@ class Brreg_GravityForms_Autocomplete {
                 'city'   => 'invoice_city',
             ),
             'make_fields_uneditable' => false,
+            'make_uneditable_after_population' => false,
         );
     }
 
@@ -131,6 +133,7 @@ class Brreg_GravityForms_Autocomplete {
         }
 
         $sanitized['make_fields_uneditable'] = isset( $input['make_fields_uneditable'] ) ? 1 : 0;
+        $sanitized['make_uneditable_after_population'] = isset( $input['make_uneditable_after_population'] ) ? 1 : 0;
 
         return $sanitized;
     }
@@ -287,7 +290,29 @@ class Brreg_GravityForms_Autocomplete {
                                         <?php esc_html_e( 'Make output fields uneditable (greyed out and locked from editing)', 'brreg-gf-autocomplete' ); ?>
                                     </label>
                                     <p class="description">
-                                        <?php esc_html_e( 'When enabled, the output fields (organization number, street, zip, city) will be disabled and visually greyed out after being populated.', 'brreg-gf-autocomplete' ); ?>
+                                        <?php esc_html_e( 'When enabled, the output fields (organization number, street, zip, city) will be disabled and visually greyed out.', 'brreg-gf-autocomplete' ); ?>
+                                    </p>
+                                </fieldset>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <label for="make_uneditable_after_population"><?php esc_html_e( 'Make Uneditable After Population', 'brreg-gf-autocomplete' ); ?></label>
+                            </th>
+                            <td>
+                                <fieldset>
+                                    <label for="make_uneditable_after_population">
+                                        <input 
+                                            type="checkbox" 
+                                            id="make_uneditable_after_population" 
+                                            name="<?php echo esc_attr( self::OPTION_NAME ); ?>[make_uneditable_after_population]" 
+                                            value="1"
+                                            <?php checked( ! empty( $settings['make_uneditable_after_population'] ) ); ?>
+                                        />
+                                        <?php esc_html_e( 'Make fields uneditable after population (instead of at load)', 'brreg-gf-autocomplete' ); ?>
+                                    </label>
+                                    <p class="description">
+                                        <?php esc_html_e( 'If ticked, fields are made uneditable after they are populated with company data. If not ticked, fields are made uneditable at page load (when "Make Fields Uneditable" is enabled).', 'brreg-gf-autocomplete' ); ?>
                                     </p>
                                 </fieldset>
                             </td>
