@@ -55,11 +55,11 @@ class Brreg_GravityForms_Autocomplete {
                     'trigger_class'  => isset( $saved['trigger_class'] ) ? $saved['trigger_class'] : $defaults['trigger_class'],
                     'min_chars'      => isset( $saved['min_chars'] ) ? intval( $saved['min_chars'] ) : $defaults['min_chars'],
                     'outputs'        => array(
-                        'orgnr'  => isset( $saved['outputs']['orgnr'] ) ? $saved['outputs']['orgnr'] : $defaults['outputs']['orgnr'],
-                        'street' => isset( $saved['outputs']['street'] ) ? $saved['outputs']['street'] : $defaults['outputs']['street'],
-                        'zip'    => isset( $saved['outputs']['zip'] ) ? $saved['outputs']['zip'] : $defaults['outputs']['zip'],
-                        'city'   => isset( $saved['outputs']['city'] ) ? $saved['outputs']['city'] : $defaults['outputs']['city'],
-                        'email'  => isset( $saved['outputs']['email'] ) ? $saved['outputs']['email'] : $defaults['outputs']['email'],
+                        'orgnr'  => ! empty( $saved['outputs']['orgnr'] ) ? $saved['outputs']['orgnr'] : $defaults['outputs']['orgnr'],
+                        'street' => ! empty( $saved['outputs']['street'] ) ? $saved['outputs']['street'] : $defaults['outputs']['street'],
+                        'zip'    => ! empty( $saved['outputs']['zip'] ) ? $saved['outputs']['zip'] : $defaults['outputs']['zip'],
+                        'city'   => ! empty( $saved['outputs']['city'] ) ? $saved['outputs']['city'] : $defaults['outputs']['city'],
+                        'email'  => ! empty( $saved['outputs']['email'] ) ? $saved['outputs']['email'] : $defaults['outputs']['email'],
                     ),
                     'field_settings' => $field_settings,
                     'conditions'     => array(),
@@ -235,7 +235,22 @@ class Brreg_GravityForms_Autocomplete {
         // Run migration if needed (converts old global settings to per-field)
         self::maybe_migrate_settings();
 
-        $settings = get_option( self::OPTION_NAME, self::get_default_config() );
+        $defaults = self::get_default_config();
+        $saved    = get_option( self::OPTION_NAME, array() );
+
+        // Merge saved settings with defaults to ensure all keys exist
+        $settings = array(
+            'trigger_class'  => ! empty( $saved['trigger_class'] ) ? $saved['trigger_class'] : $defaults['trigger_class'],
+            'min_chars'      => isset( $saved['min_chars'] ) ? $saved['min_chars'] : $defaults['min_chars'],
+            'outputs'        => array(
+                'orgnr'  => ! empty( $saved['outputs']['orgnr'] ) ? $saved['outputs']['orgnr'] : $defaults['outputs']['orgnr'],
+                'street' => ! empty( $saved['outputs']['street'] ) ? $saved['outputs']['street'] : $defaults['outputs']['street'],
+                'zip'    => ! empty( $saved['outputs']['zip'] ) ? $saved['outputs']['zip'] : $defaults['outputs']['zip'],
+                'city'   => ! empty( $saved['outputs']['city'] ) ? $saved['outputs']['city'] : $defaults['outputs']['city'],
+                'email'  => ! empty( $saved['outputs']['email'] ) ? $saved['outputs']['email'] : $defaults['outputs']['email'],
+            ),
+            'field_settings' => isset( $saved['field_settings'] ) ? $saved['field_settings'] : $defaults['field_settings'],
+        );
         ?>
         <div class="wrap brreg-gf-autocomplete-settings">
             <h1><?php echo esc_html( get_admin_page_title() ); ?></h1>
@@ -328,7 +343,7 @@ class Brreg_GravityForms_Autocomplete {
                                                 type="text"
                                                 id="output_email"
                                                 name="<?php echo esc_attr( self::OPTION_NAME ); ?>[outputs][email]"
-                                                value="<?php echo esc_attr( $settings['outputs']['email'] ?? '' ); ?>"
+                                                value="<?php echo esc_attr( $settings['outputs']['email'] ); ?>"
                                                 class="regular-text"
                                                 placeholder="invoice_email"
                                             />
