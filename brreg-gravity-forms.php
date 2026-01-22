@@ -3,7 +3,7 @@
  * Plugin Name: Brønnøysund + Gravity Forms Autocomplete
  * Description: Autocomplete company info from Brønnøysund by using CSS classes on Gravity Forms fields.
  * Author: Nettsmed AS
- * Version: 0.1.0
+ * Version: 1.1.0
  */
 
 if ( ! defined( 'ABSPATH' ) ) {
@@ -220,7 +220,7 @@ class Brreg_GravityForms_Autocomplete {
             'brreg-gf-admin',
             plugin_dir_url( __FILE__ ) . 'assets/css/admin.css',
             array(),
-            '0.1.0'
+            '1.1.0'
         );
     }
 
@@ -485,14 +485,14 @@ class Brreg_GravityForms_Autocomplete {
             'brreg-gf-frontend',
             plugin_dir_url( __FILE__ ) . 'assets/css/frontend.css',
             array(),
-            '0.1.0'
+            '1.1.0'
         );
 
         wp_enqueue_script(
             $handle,
             plugin_dir_url( __FILE__ ) . 'assets/js/brreg-gf-autocomplete.js',
             array(), // no dependencies
-            '0.1.0',
+            '1.1.0',
             true
         );
 
