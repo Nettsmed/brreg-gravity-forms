@@ -77,12 +77,14 @@
           triggerClass
         );
 
-        // Resolve output fields via CSS class (scoped to same root wrapper)
-        const orgInput = outputs.orgnr ? findInputByWrapperClass(outputs.orgnr, root) : null;
-        const streetInput = outputs.street ? findInputByWrapperClass(outputs.street, root) : null;
-        const zipInput = outputs.zip ? findInputByWrapperClass(outputs.zip, root) : null;
-        const cityInput = outputs.city ? findInputByWrapperClass(outputs.city, root) : null;
-        const emailInput = outputs.email ? findInputByWrapperClass(outputs.email, root) : null;
+        // Resolve output fields via CSS class (scoped to same root wrapper).
+        // Use the plural lookup so duplicate fields sharing the same class
+        // (e.g. two org-number fields toggled by conditional logic) all get populated.
+        const orgInputs = outputs.orgnr ? findInputsByWrapperClass(outputs.orgnr, root) : [];
+        const streetInputs = outputs.street ? findInputsByWrapperClass(outputs.street, root) : [];
+        const zipInputs = outputs.zip ? findInputsByWrapperClass(outputs.zip, root) : [];
+        const cityInputs = outputs.city ? findInputsByWrapperClass(outputs.city, root) : [];
+        const emailInputs = outputs.email ? findInputsByWrapperClass(outputs.email, root) : [];
 
         // Per-field settings for uneditable control
         const fieldSettings = profile.field_settings || {};
@@ -122,46 +124,44 @@
           input.style.opacity = '';
         }
 
+        // Apply a callback to every input in a list of resolved fields.
+        function forEachInput(inputs, fn) {
+          inputs.forEach(fn);
+        }
+
+        // Set the same value on every input in a list.
+        function setValueOnInputs(inputs, value) {
+          forEachInput(inputs, function (input) {
+            input.value = value;
+            input.dispatchEvent(new Event('change'));
+          });
+        }
+
         // Function to clear all output fields
         function clearOutputFields() {
-          if (orgInput) {
-            orgInput.value = '';
-            orgInput.dispatchEvent(new Event('change'));
-          }
-          if (streetInput) {
-            streetInput.value = '';
-            streetInput.dispatchEvent(new Event('change'));
-          }
-          if (zipInput) {
-            zipInput.value = '';
-            zipInput.dispatchEvent(new Event('change'));
-          }
-          if (cityInput) {
-            cityInput.value = '';
-            cityInput.dispatchEvent(new Event('change'));
-          }
-          if (emailInput) {
-            emailInput.value = '';
-            emailInput.dispatchEvent(new Event('change'));
-          }
+          setValueOnInputs(orgInputs, '');
+          setValueOnInputs(streetInputs, '');
+          setValueOnInputs(zipInputs, '');
+          setValueOnInputs(cityInputs, '');
+          setValueOnInputs(emailInputs, '');
         }
 
         // Make fields uneditable at page load if configured
         // Only apply if "uneditable" is checked but "uneditable_after_population" is NOT checked
-        if (orgInput && shouldBeUneditable('orgnr') && !shouldBeUneditableAfterPopulation('orgnr')) {
-          setFieldUneditable(orgInput);
+        if (shouldBeUneditable('orgnr') && !shouldBeUneditableAfterPopulation('orgnr')) {
+          forEachInput(orgInputs, setFieldUneditable);
         }
-        if (streetInput && shouldBeUneditable('street') && !shouldBeUneditableAfterPopulation('street')) {
-          setFieldUneditable(streetInput);
+        if (shouldBeUneditable('street') && !shouldBeUneditableAfterPopulation('street')) {
+          forEachInput(streetInputs, setFieldUneditable);
         }
-        if (zipInput && shouldBeUneditable('zip') && !shouldBeUneditableAfterPopulation('zip')) {
-          setFieldUneditable(zipInput);
+        if (shouldBeUneditable('zip') && !shouldBeUneditableAfterPopulation('zip')) {
+          forEachInput(zipInputs, setFieldUneditable);
         }
-        if (cityInput && shouldBeUneditable('city') && !shouldBeUneditableAfterPopulation('city')) {
-          setFieldUneditable(cityInput);
+        if (shouldBeUneditable('city') && !shouldBeUneditableAfterPopulation('city')) {
+          forEachInput(cityInputs, setFieldUneditable);
         }
-        if (emailInput && shouldBeUneditable('email') && !shouldBeUneditableAfterPopulation('email')) {
-          setFieldUneditable(emailInput);
+        if (shouldBeUneditable('email') && !shouldBeUneditableAfterPopulation('email')) {
+          forEachInput(emailInputs, setFieldUneditable);
         }
 
         // Wrap input so dropdown can position below
@@ -314,44 +314,36 @@
                   companyInput.value = company.navn;
                   companyInput.dispatchEvent(new Event('change'));
 
-                  // Helper function to set value on field
-                  // Fields use readonly (not disabled) so values are submitted
-                  function setValueOnField(input, value) {
-                    if (!input) return;
-                    input.value = value;
-                    input.dispatchEvent(new Event('change'));
-                  }
-
-                  // Org number
-                  setValueOnField(orgInput, company.organisasjonsnummer);
+                  // Org number (all matching fields, e.g. conditional duplicates)
+                  setValueOnInputs(orgInputs, company.organisasjonsnummer);
 
                   // Address fields
                   const addr = getBestAddress(company);
                   if (addr) {
-                    setValueOnField(streetInput, addr.street);
-                    setValueOnField(zipInput, addr.zip);
-                    setValueOnField(cityInput, addr.city);
+                    setValueOnInputs(streetInputs, addr.street);
+                    setValueOnInputs(zipInputs, addr.zip);
+                    setValueOnInputs(cityInputs, addr.city);
                   }
 
                   // Email field - uses company.epostadresse from Brreg API
-                  setValueOnField(emailInput, company.epostadresse || '');
+                  setValueOnInputs(emailInputs, company.epostadresse || '');
 
                   // Make fields uneditable after population if configured
                   // Only apply if both "uneditable" and "uneditable_after_population" are checked
-                  if (orgInput && shouldBeUneditable('orgnr') && shouldBeUneditableAfterPopulation('orgnr')) {
-                    setFieldUneditable(orgInput);
+                  if (shouldBeUneditable('orgnr') && shouldBeUneditableAfterPopulation('orgnr')) {
+                    forEachInput(orgInputs, setFieldUneditable);
                   }
-                  if (streetInput && shouldBeUneditable('street') && shouldBeUneditableAfterPopulation('street')) {
-                    setFieldUneditable(streetInput);
+                  if (shouldBeUneditable('street') && shouldBeUneditableAfterPopulation('street')) {
+                    forEachInput(streetInputs, setFieldUneditable);
                   }
-                  if (zipInput && shouldBeUneditable('zip') && shouldBeUneditableAfterPopulation('zip')) {
-                    setFieldUneditable(zipInput);
+                  if (shouldBeUneditable('zip') && shouldBeUneditableAfterPopulation('zip')) {
+                    forEachInput(zipInputs, setFieldUneditable);
                   }
-                  if (cityInput && shouldBeUneditable('city') && shouldBeUneditableAfterPopulation('city')) {
-                    setFieldUneditable(cityInput);
+                  if (shouldBeUneditable('city') && shouldBeUneditableAfterPopulation('city')) {
+                    forEachInput(cityInputs, setFieldUneditable);
                   }
-                  if (emailInput && shouldBeUneditable('email') && shouldBeUneditableAfterPopulation('email')) {
-                    setFieldUneditable(emailInput);
+                  if (shouldBeUneditable('email') && shouldBeUneditableAfterPopulation('email')) {
+                    forEachInput(emailInputs, setFieldUneditable);
                   }
 
                   dropdown.innerHTML = '';
@@ -385,20 +377,20 @@
 
             // Make fields editable again when company name is cleared
             // Only apply if both "uneditable" and "uneditable_after_population" are checked
-            if (orgInput && shouldBeUneditable('orgnr') && shouldBeUneditableAfterPopulation('orgnr')) {
-              setFieldEditable(orgInput);
+            if (shouldBeUneditable('orgnr') && shouldBeUneditableAfterPopulation('orgnr')) {
+              forEachInput(orgInputs, setFieldEditable);
             }
-            if (streetInput && shouldBeUneditable('street') && shouldBeUneditableAfterPopulation('street')) {
-              setFieldEditable(streetInput);
+            if (shouldBeUneditable('street') && shouldBeUneditableAfterPopulation('street')) {
+              forEachInput(streetInputs, setFieldEditable);
             }
-            if (zipInput && shouldBeUneditable('zip') && shouldBeUneditableAfterPopulation('zip')) {
-              setFieldEditable(zipInput);
+            if (shouldBeUneditable('zip') && shouldBeUneditableAfterPopulation('zip')) {
+              forEachInput(zipInputs, setFieldEditable);
             }
-            if (cityInput && shouldBeUneditable('city') && shouldBeUneditableAfterPopulation('city')) {
-              setFieldEditable(cityInput);
+            if (shouldBeUneditable('city') && shouldBeUneditableAfterPopulation('city')) {
+              forEachInput(cityInputs, setFieldEditable);
             }
-            if (emailInput && shouldBeUneditable('email') && shouldBeUneditableAfterPopulation('email')) {
-              setFieldEditable(emailInput);
+            if (shouldBeUneditable('email') && shouldBeUneditableAfterPopulation('email')) {
+              forEachInput(emailInputs, setFieldEditable);
             }
 
             dropdown.style.display = 'none';
@@ -438,28 +430,10 @@
   }
 
   /**
-   * Utility: find Gravity Forms input via wrapper CSS class
-   * Assumes structure like <li class="... custom-class ..."><input ...></li>
+   * Utility: find all Gravity Forms inputs via wrapper CSS class.
+   * Assumes structure like <li class="... custom-class ..."><input ...></li>,
+   * with a fallback for the class applied directly on the input.
    */
-  function findInputByWrapperClass(cssClass, root) {
-    if (!cssClass) return null;
-    const scope = root || document;
-
-    // Typical GF markup: .customclass input (scoped to a gform wrapper/root)
-    let el = scope.querySelector('.' + cssClass + ' input');
-    if (el) {
-      return el;
-    }
-
-    // Fallback: if someone applied class directly on input
-    el = scope.querySelector('input.' + cssClass);
-    if (el) {
-      return el;
-    }
-
-    return null;
-  }
-
   function findInputsByWrapperClass(cssClass, root) {
     if (!cssClass) return [];
     const scope = root || document;

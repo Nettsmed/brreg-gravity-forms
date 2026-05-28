@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Fixed
+- **Duplicate output fields now all populate**: Output fields (org number, address, etc.) are resolved with `querySelectorAll` instead of `querySelector`, so two fields sharing the same CSS class — e.g. two org-number fields toggled by Gravity Forms conditional logic — both receive the autocompleted value. Previously only the first matching field was populated.
+
 ## 1.1.0
 
 ### Added
