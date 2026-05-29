@@ -19,6 +19,7 @@ class Brreg_GravityForms_Autocomplete {
         add_action( 'admin_menu', array( $this, 'add_admin_menu' ) );
         add_action( 'admin_init', array( $this, 'register_settings' ) );
         add_action( 'admin_enqueue_scripts', array( $this, 'enqueue_admin_styles' ) );
+        add_filter( 'gform_field_validation', array( $this, 'validate_conditional_required' ), 10, 4 );
         register_activation_hook( __FILE__, array( __CLASS__, 'activate' ) );
     }
 
@@ -64,6 +65,9 @@ class Brreg_GravityForms_Autocomplete {
                     'field_settings'     => $field_settings,
                     'bypass_field_class' => isset( $saved['bypass_field_class'] ) ? $saved['bypass_field_class'] : $defaults['bypass_field_class'],
                     'bypass_value'       => isset( $saved['bypass_value'] ) ? $saved['bypass_value'] : $defaults['bypass_value'],
+                    'required_target_class' => isset( $saved['required_target_class'] ) ? $saved['required_target_class'] : $defaults['required_target_class'],
+                    'required_field_class'  => isset( $saved['required_field_class'] ) ? $saved['required_field_class'] : $defaults['required_field_class'],
+                    'required_value'        => isset( $saved['required_value'] ) ? $saved['required_value'] : $defaults['required_value'],
                     'conditions'         => array(),
                 ),
             ),
@@ -98,6 +102,9 @@ class Brreg_GravityForms_Autocomplete {
             ),
             'bypass_field_class' => '',
             'bypass_value'       => '',
+            'required_target_class' => '',
+            'required_field_class'  => '',
+            'required_value'        => '',
         );
     }
 
@@ -212,6 +219,10 @@ class Brreg_GravityForms_Autocomplete {
         $sanitized['bypass_field_class'] = isset( $input['bypass_field_class'] ) ? sanitize_html_class( $input['bypass_field_class'] ) : '';
         $sanitized['bypass_value'] = isset( $input['bypass_value'] ) ? sanitize_text_field( $input['bypass_value'] ) : '';
 
+        $sanitized['required_target_class'] = isset( $input['required_target_class'] ) ? sanitize_html_class( $input['required_target_class'] ) : '';
+        $sanitized['required_field_class'] = isset( $input['required_field_class'] ) ? sanitize_html_class( $input['required_field_class'] ) : '';
+        $sanitized['required_value'] = isset( $input['required_value'] ) ? sanitize_text_field( $input['required_value'] ) : '';
+
         return $sanitized;
     }
 
@@ -259,6 +270,9 @@ class Brreg_GravityForms_Autocomplete {
             'field_settings'     => isset( $saved['field_settings'] ) ? $saved['field_settings'] : $defaults['field_settings'],
             'bypass_field_class' => isset( $saved['bypass_field_class'] ) ? $saved['bypass_field_class'] : $defaults['bypass_field_class'],
             'bypass_value'       => isset( $saved['bypass_value'] ) ? $saved['bypass_value'] : $defaults['bypass_value'],
+            'required_target_class' => isset( $saved['required_target_class'] ) ? $saved['required_target_class'] : $defaults['required_target_class'],
+            'required_field_class'  => isset( $saved['required_field_class'] ) ? $saved['required_field_class'] : $defaults['required_field_class'],
+            'required_value'        => isset( $saved['required_value'] ) ? $saved['required_value'] : $defaults['required_value'],
         );
         ?>
         <div class="wrap brreg-gf-autocomplete-settings">
@@ -487,6 +501,60 @@ class Brreg_GravityForms_Autocomplete {
                                 </p>
                             </td>
                         </tr>
+                        <tr>
+                            <th scope="row">
+                                <label for="required_target_class"><?php esc_html_e( 'Conditional Required: Target Field CSS Class', 'brreg-gf-autocomplete' ); ?></label>
+                            </th>
+                            <td>
+                                <input
+                                    type="text"
+                                    id="required_target_class"
+                                    name="<?php echo esc_attr( self::OPTION_NAME ); ?>[required_target_class]"
+                                    value="<?php echo esc_attr( $settings['required_target_class'] ); ?>"
+                                    class="regular-text"
+                                    placeholder="org_number"
+                                />
+                                <p class="description">
+                                    <?php esc_html_e( 'CSS class of the field that should become required only under a condition (e.g. the org number field). The field itself must be set to "not required" in Gravity Forms — this feature enforces it conditionally.', 'brreg-gf-autocomplete' ); ?>
+                                </p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <label for="required_field_class"><?php esc_html_e( 'Conditional Required: Controlling Field CSS Class', 'brreg-gf-autocomplete' ); ?></label>
+                            </th>
+                            <td>
+                                <input
+                                    type="text"
+                                    id="required_field_class"
+                                    name="<?php echo esc_attr( self::OPTION_NAME ); ?>[required_field_class]"
+                                    value="<?php echo esc_attr( $settings['required_field_class'] ); ?>"
+                                    class="regular-text"
+                                    placeholder="private_payment"
+                                />
+                                <p class="description">
+                                    <?php esc_html_e( 'CSS class of the radio/select/checkbox field that controls whether the target is required (e.g. "Betaler du privat?").', 'brreg-gf-autocomplete' ); ?>
+                                </p>
+                            </td>
+                        </tr>
+                        <tr>
+                            <th scope="row">
+                                <label for="required_value"><?php esc_html_e( 'Conditional Required: Trigger Value', 'brreg-gf-autocomplete' ); ?></label>
+                            </th>
+                            <td>
+                                <input
+                                    type="text"
+                                    id="required_value"
+                                    name="<?php echo esc_attr( self::OPTION_NAME ); ?>[required_value]"
+                                    value="<?php echo esc_attr( $settings['required_value'] ); ?>"
+                                    class="regular-text"
+                                    placeholder="Nei"
+                                />
+                                <p class="description">
+                                    <?php esc_html_e( 'When the controlling field has this value, the target field is required (e.g. "Nei" = not paying privately, so an org number must be supplied).', 'brreg-gf-autocomplete' ); ?>
+                                </p>
+                            </td>
+                        </tr>
                     </tbody>
                 </table>
                 <?php submit_button(); ?>
@@ -522,6 +590,65 @@ class Brreg_GravityForms_Autocomplete {
         <?php
     }
 
+    /**
+     * Check whether a Gravity Forms field carries a given CSS class.
+     */
+    private static function field_has_class( $field, $class ) {
+        if ( empty( $class ) || empty( $field->cssClass ) ) {
+            return false;
+        }
+        $classes = preg_split( '/\s+/', trim( $field->cssClass ) );
+        return in_array( $class, $classes, true );
+    }
+
+    /**
+     * Conditionally require a field based on another field's submitted value.
+     * GF's native conditional logic can only toggle visibility, not the required
+     * flag — this enforces "required when controlling field == trigger value".
+     */
+    public function validate_conditional_required( $result, $value, $form, $field ) {
+        $config  = self::get_config();
+        $profile = $config['profiles'][0];
+
+        $target_class  = $profile['required_target_class'];
+        $control_class = $profile['required_field_class'];
+        $trigger_value = $profile['required_value'];
+
+        if ( '' === $target_class || '' === $control_class || '' === $trigger_value ) {
+            return $result;
+        }
+        if ( ! self::field_has_class( $field, $target_class ) ) {
+            return $result;
+        }
+
+        $control_value = null;
+        foreach ( $form['fields'] as $form_field ) {
+            if ( self::field_has_class( $form_field, $control_class ) ) {
+                $control_value = rgpost( 'input_' . $form_field->id );
+                break;
+            }
+        }
+
+        if ( (string) $control_value !== (string) $trigger_value ) {
+            return $result;
+        }
+
+        $is_empty = is_array( $value )
+            ? 0 === count( array_filter( $value, static function ( $v ) {
+                return '' !== $v && null !== $v;
+            } ) )
+            : ( '' === trim( (string) $value ) );
+
+        if ( $is_empty ) {
+            $result['is_valid'] = false;
+            $result['message']  = ! empty( $field->errorMessage )
+                ? $field->errorMessage
+                : __( 'This field is required.', 'brreg-gf-autocomplete' );
+        }
+
+        return $result;
+    }
+
     public function enqueue_scripts() {
         // Only load on frontend
         if ( is_admin() ) {
@@ -540,19 +667,25 @@ class Brreg_GravityForms_Autocomplete {
 
         $handle = 'brreg-gf-autocomplete';
 
+        // Cache-bust assets on file change so updates always reach the browser.
+        $css_path = plugin_dir_path( __FILE__ ) . 'assets/css/frontend.css';
+        $js_path  = plugin_dir_path( __FILE__ ) . 'assets/js/brreg-gf-autocomplete.js';
+        $css_ver  = file_exists( $css_path ) ? filemtime( $css_path ) : '1.2.0';
+        $js_ver   = file_exists( $js_path ) ? filemtime( $js_path ) : '1.2.0';
+
         // Enqueue frontend styles
         wp_enqueue_style(
             'brreg-gf-frontend',
             plugin_dir_url( __FILE__ ) . 'assets/css/frontend.css',
             array(),
-            '1.2.0'
+            $css_ver
         );
 
         wp_enqueue_script(
             $handle,
             plugin_dir_url( __FILE__ ) . 'assets/js/brreg-gf-autocomplete.js',
             array(), // no dependencies
-            '1.2.0',
+            $js_ver,
             true
         );
 
