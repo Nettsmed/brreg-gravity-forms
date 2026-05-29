@@ -2,6 +2,11 @@
 
 All notable changes to this project will be documented in this file.
 
+## [Unreleased]
+
+### Added
+- **Conditional required mode**: New "Conditional Required" settings (Target Field CSS Class, Controlling Field CSS Class, Trigger Value). Enforces a field as required only when another field has a given value — e.g. org number required when "Betaler du privat?" = "Nei", optional otherwise. Lets a single always-visible org field be conditionally required without duplicate fields.
+
 ## 1.2.0
 
 ### Added
