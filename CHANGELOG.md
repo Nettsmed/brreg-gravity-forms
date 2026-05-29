@@ -6,6 +6,10 @@ All notable changes to this project will be documented in this file.
 
 ### Added
 - **Conditional required mode**: New "Conditional Required" settings (Target Field CSS Class, Controlling Field CSS Class, Trigger Value). Enforces a field as required only when another field has a given value — e.g. org number required when "Betaler du privat?" = "Nei", optional otherwise. Lets a single always-visible org field be conditionally required without duplicate fields.
+- **Conditional required visual marker**: The target field's label now shows/hides the Gravity Forms "required" indicator (e.g. "(Påkrevd)") live as the controlling field changes, so a conditionally-required field also looks required.
+
+### Changed
+- Frontend CSS/JS are now cache-busted by file modification time, so asset updates always reach the browser without a manual version bump.
 
 ## 1.2.0
 

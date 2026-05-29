@@ -667,19 +667,25 @@ class Brreg_GravityForms_Autocomplete {
 
         $handle = 'brreg-gf-autocomplete';
 
+        // Cache-bust assets on file change so updates always reach the browser.
+        $css_path = plugin_dir_path( __FILE__ ) . 'assets/css/frontend.css';
+        $js_path  = plugin_dir_path( __FILE__ ) . 'assets/js/brreg-gf-autocomplete.js';
+        $css_ver  = file_exists( $css_path ) ? filemtime( $css_path ) : '1.2.0';
+        $js_ver   = file_exists( $js_path ) ? filemtime( $js_path ) : '1.2.0';
+
         // Enqueue frontend styles
         wp_enqueue_style(
             'brreg-gf-frontend',
             plugin_dir_url( __FILE__ ) . 'assets/css/frontend.css',
             array(),
-            '1.2.0'
+            $css_ver
         );
 
         wp_enqueue_script(
             $handle,
             plugin_dir_url( __FILE__ ) . 'assets/js/brreg-gf-autocomplete.js',
             array(), // no dependencies
-            '1.2.0',
+            $js_ver,
             true
         );
 

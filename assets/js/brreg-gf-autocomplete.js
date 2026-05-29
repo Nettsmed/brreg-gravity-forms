@@ -57,6 +57,10 @@
     let anyInitialized = false;
 
     roots.forEach(function (root) {
+      // Conditional-required visual marker is independent of the autocomplete
+      // trigger field, so run it for every wrapper regardless of company input.
+      initConditionalRequiredMarker(profile, root);
+
       const companyInputs = findInputsByWrapperClass(triggerClass, root);
       if (!companyInputs.length) {
         return;
@@ -528,6 +532,72 @@
     });
 
     return anyInitialized;
+  }
+
+  /**
+   * Show/hide a "required" indicator on the target field's label based on a
+   * controlling field's value. Mirrors the server-side gform_field_validation
+   * rule so a conditionally-required field also *looks* required.
+   */
+  function initConditionalRequiredMarker(profile, root) {
+    const targetClass = profile.required_target_class;
+    const controlClass = profile.required_field_class;
+    const triggerValue = profile.required_value;
+    if (!targetClass || !controlClass || !triggerValue) return;
+
+    const controlWrapper = root.querySelector('.' + controlClass);
+    const targetWrapper = root.querySelector('.' + targetClass);
+    if (!controlWrapper || !targetWrapper) return;
+
+    const label =
+      targetWrapper.querySelector('.gfield_label') || targetWrapper.querySelector('label');
+    if (!label) return;
+
+    function getControlValue() {
+      const radio = controlWrapper.querySelector('input[type="radio"]:checked');
+      if (radio) return radio.value;
+      const checkbox = controlWrapper.querySelector('input[type="checkbox"]:checked');
+      if (checkbox) return checkbox.value;
+      const select = controlWrapper.querySelector('select');
+      if (select) return select.value;
+      const text = controlWrapper.querySelector('input[type="text"], input[type="hidden"]');
+      if (text) return text.value;
+      return '';
+    }
+
+    function buildMarker() {
+      // Clone an existing GF required indicator so text/classes/styling match exactly.
+      const existing = root.querySelector('.gfield_required');
+      let marker;
+      if (existing) {
+        marker = existing.cloneNode(true);
+      } else {
+        marker = document.createElement('span');
+        marker.className = 'gfield_required gfield_required_text';
+        marker.textContent = '(Påkrevd)';
+      }
+      marker.setAttribute('data-brreg-required-marker', '1');
+      return marker;
+    }
+
+    function updateMarker() {
+      const isRequired = String(getControlValue()) === String(triggerValue);
+      const current = label.querySelector('[data-brreg-required-marker="1"]');
+      if (isRequired && !current) {
+        label.appendChild(buildMarker());
+      } else if (!isRequired && current) {
+        current.remove();
+      }
+    }
+
+    if (controlWrapper.dataset.brregReqBound !== '1') {
+      controlWrapper.dataset.brregReqBound = '1';
+      controlWrapper.querySelectorAll('input, select').forEach(function (el) {
+        el.addEventListener('change', updateMarker);
+      });
+    }
+
+    updateMarker();
   }
 
   /**
